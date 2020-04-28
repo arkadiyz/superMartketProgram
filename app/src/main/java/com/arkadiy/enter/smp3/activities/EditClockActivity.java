@@ -50,6 +50,7 @@ public class EditClockActivity extends AppCompatActivity {
     private long userId;
     private JSONObject jsonClock;
     private JSONObject jsonRes;
+    private boolean updateList =  false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,30 +58,29 @@ public class EditClockActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit_clock);
         App.setContext(EditClockActivity.this);
 
-        userSpinner = (Spinner)findViewById(R.id.userNameEditHours_Spinner);
-        hoursWork = (ListView)findViewById(R.id.editHours_listView);
-        getShiftsFromUser = (Button)findViewById(R.id.getShiftUserById_Button);
-        createNewShift = (Button)findViewById(R.id.sendNewDay_Buttom);
+        userSpinner = (Spinner) findViewById(R.id.userNameEditHours_Spinner);
+        hoursWork = (ListView) findViewById(R.id.editHours_listView);
+        getShiftsFromUser = (Button) findViewById(R.id.getShiftUserById_Button);
+        createNewShift = (Button) findViewById(R.id.sendNewDay_Buttom);
         requestQueue = Volley.newRequestQueue(EditClockActivity.this);
         listWork = new ArrayList<DayWork>();
 
         d = Store.getDepartmentById(Manager.getMyDepartmentId());
-        if(d==null && Manager.getMyDepartmentId()==0){
-            uList=Store.getAllUsers();
-        }else{
+        if (d == null && Manager.getMyDepartmentId() == 0) {
+            uList = Store.getAllUsers();
+        } else {
             uList = d.getUsers();
         }
         userName = new ArrayList<>(getUserName(uList));
-        arrayAdapterUsers = new ArrayAdapter(App.getContext(),R.layout.support_simple_spinner_dropdown_item,userName);
+        arrayAdapterUsers = new ArrayAdapter(App.getContext(), R.layout.support_simple_spinner_dropdown_item, userName);
         userSpinner.setAdapter(arrayAdapterUsers);
-
 
 
         userSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                for (int i = 0 ; i < userName.size() ; i++){
-                    if (userName.get(position).equals(uList.get(i).getUserName())){
+                for (int i = 0; i < userName.size(); i++) {
+                    if (userName.get(position).equals(uList.get(i).getUserName())) {
                         userId = uList.get(i).getUserId();
 
                         break;
@@ -98,23 +98,7 @@ public class EditClockActivity extends AppCompatActivity {
         getShiftsFromUser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                Manager.getShiftByUser(userId,requestQueue,houresHanler->{
-                    Message msg = new Message();
-                    Bundle bundle = houresHanler.getData();
-                    try {
-                        jsonRes = new JSONObject(bundle.getString("json"));
-                        listWork =new ArrayList<>();
-                        listWork = GetDate.setDayWork(jsonRes);
-                        customAdapterHours = new CustomAdapterHours(EditClockActivity.this,listWork);
-                        hoursWork.setAdapter(customAdapterHours);
-//                        customAdapterHours.notifyDataSetChanged();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    return true;
-
-                });
+                getShiftByUser();
             }
         });
 
@@ -122,15 +106,21 @@ public class EditClockActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                Intent intent = new Intent(EditClockActivity.this,EditUserAttendancy.class);
-                    intent.putExtra("userId",String.valueOf(userId));
+                Intent intent = new Intent(EditClockActivity.this, EditUserAttendancy.class);
+                intent.putExtra("userId", String.valueOf(userId));
 
-                    intent.putExtra("start_id",String.valueOf(listWork.get(position).getStartId()));
-                    intent.putExtra("start",listWork.get(position).getStart());
+                intent.putExtra("start_id", String.valueOf(listWork.get(position).getStartId()));
+                intent.putExtra("start", listWork.get(position).getStart());
 
 
-                    intent.putExtra("finish_id",String.valueOf(listWork.get(position).getEndId()));
-                    intent.putExtra("finish",listWork.get(position).getEnd());
+                intent.putExtra("finish_id", String.valueOf(listWork.get(position).getEndId()));
+                intent.putExtra("finish", listWork.get(position).getEnd());
+
+                intent.putExtra("next_date", getNextDate(position));
+                intent.putExtra("prev_date",getPrevDate(position));
+                intent.putExtra("userName", String.valueOf(userName));
+
+                updateList = true;
 
                 startActivity(intent);
 
@@ -141,25 +131,37 @@ public class EditClockActivity extends AppCompatActivity {
         createNewShift.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(EditClockActivity.this,EditUserAttendancy.class);
-                intent.putExtra("userId",String.valueOf(userId));
-                intent.putExtra("start_id",String.valueOf(-100));
-                intent.putExtra("finish_id",String.valueOf(-100));
+                Intent intent = new Intent(EditClockActivity.this, EditUserAttendancy.class);
+                intent.putExtra("userId", String.valueOf(userId));
+                intent.putExtra("start_id", String.valueOf(-100));
+                intent.putExtra("finish_id", String.valueOf(-100));
                 startActivity(intent);
             }
         });
 
 
-        Toolbar toolbar=(Toolbar)findViewById(R.id.toolbarMine);
+
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarMine);
         setSupportActionBar(toolbar);
-        GlobalServices.addListener(toolbar,this);
+        GlobalServices.addListener(toolbar, this);
 
 
     }
 
-    private List<String> getUserName(List<User>userList){
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if(updateList){
+            getShiftByUser();
+            updateList = false;
+        }
+    }
+
+    private List<String> getUserName(List<User> userList) {
         List<String> userN = new ArrayList<>();
-        for (int i = 0 ; i < userList.size() ; i++){
+        for (int i = 0; i < userList.size(); i++) {
 
             userN.add(userList.get(i).getUserName());
 
@@ -169,7 +171,44 @@ public class EditClockActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu,menu);
+        getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
+
+    private String getNextDate(int position) {
+        String result=null;
+        if(position<listWork.size()-1){
+            result=listWork.get(position+1).getStartId()!=-100?listWork.get(position+1).getStart():listWork.get(position+1).getEnd();
+        }
+        return result;
+    }
+
+    private String getPrevDate(int position) {
+        String result=null;
+        if(position>0){
+            result=listWork.get(position-1).getEndId()!=-100?listWork.get(position-1).getEnd():listWork.get(position-1).getStart();
+        }
+        return result;
+    }
+
+    public void getShiftByUser( ){
+        Manager.getShiftByUser(userId, requestQueue, houresHanler -> {
+            Message msg = new Message();
+            Bundle bundle = houresHanler.getData();
+            try {
+                jsonRes = new JSONObject(bundle.getString("json"));
+                listWork = new ArrayList<>();
+                listWork = GetDate.setDayWork(jsonRes);
+                customAdapterHours = new CustomAdapterHours(EditClockActivity.this, listWork);
+                hoursWork.setAdapter(customAdapterHours);
+//                        customAdapterHours.notifyDataSetChanged();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return true;
+
+        });
+    }
+
+
 }

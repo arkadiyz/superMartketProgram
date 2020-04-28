@@ -1,11 +1,13 @@
 package com.arkadiy.enter.smp3.dataObjects;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Message;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.arkadiy.enter.smp3.activities.App;
+import com.arkadiy.enter.smp3.activities.TasksReportActivity;
 import com.arkadiy.enter.smp3.config.AppConfig;
 import com.arkadiy.enter.smp3.config.ResponseCode;
 import com.arkadiy.enter.smp3.services.DataServices;
@@ -16,13 +18,16 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+import android.graphics.Color;
+
 import static com.arkadiy.enter.smp3.activities.App.getContext;
 
 public class Manager extends User {
 
 
-    public Manager(JSONObject jsonObject) {
-        super(jsonObject);
+    public Manager(JSONObject jsonObject , int idDep) {
+        super(jsonObject,idDep);
     }
 
     public void orderReport(int reportId, String fromDate, String toDate){
@@ -37,12 +42,36 @@ public class Manager extends User {
 
     }
 
-    public static void getReport(RequestQueue requestQueue , JSONObject jsonObject){
+    public static void getReport( RequestQueue requestQueue , JSONObject jsonObject){
 
         DataServices.sendData(AppConfig.GET_REPORT,jsonObject,requestQueue, App.getContext(), Constants.METHOD_POST,reportHenler->{
 
+            JSONObject jsonRespons = null;
+            Message msg = new Message();
+            Bundle bundle = reportHenler.getData();
+
+            try {
+
+                if(bundle.getInt(Constants.RESPONSE_CODE) < ResponseCode.ERROR){
+                    jsonRespons = new JSONObject(bundle.get("json").toString());
 
 
+                    Toast.makeText(getContext(),jsonRespons.getString("message"),Toast.LENGTH_LONG).show();
+                    msg.setData(bundle);
+                    Store.showMessage(true,jsonRespons.getString("message"));
+
+                } else {
+
+                    Store.showMessage(false,jsonRespons.getString("message"));
+                    Toast.makeText(getContext(),"Error, email was not sent ",Toast.LENGTH_LONG).show();
+                }
+
+            }catch (Exception e){
+
+                Store.showMessage(false,"Error, email was not sent ");
+                Toast.makeText(getContext(),"Error, email was not sent ",Toast.LENGTH_LONG).show();
+                e.printStackTrace();
+            }
             return true;
         });
     }
@@ -55,11 +84,13 @@ public class Manager extends User {
                     JSONObject jsonRespons;
                     Message msg = new Message();
                     Bundle bundle = reqHandlerHoures.getData();
+
                     try {
 
                         if(bundle.getInt(Constants.RESPONSE_CODE) < ResponseCode.ERROR){
                             jsonRespons = new JSONObject(bundle.get("json").toString());
                             msg.setData(bundle);
+                            Toast.makeText(getContext(),String.valueOf(jsonRespons.getInt("response_code")),Toast.LENGTH_LONG).show();
                             houresHadler .sendMessage(msg);
                         }
 
@@ -86,9 +117,10 @@ public class Manager extends User {
 
                         if(bundle.getInt(Constants.RESPONSE_CODE) < ResponseCode.ERROR){
                             jsonRespons = new JSONObject(bundle.get("json").toString());
-                            Toast.makeText(getContext(),String.valueOf(jsonRespons.getInt("response_code")),Toast.LENGTH_LONG).show();
+                            Toast.makeText(getContext(),"The data has been updated in the system",Toast.LENGTH_LONG).show();
                             msg.setData(bundle);
                             userAttendacyHandler.sendMessage(msg);
+
                         }
 
                     }catch (Exception e){

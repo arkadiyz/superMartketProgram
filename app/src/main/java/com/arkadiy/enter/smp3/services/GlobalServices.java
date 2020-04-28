@@ -39,8 +39,8 @@ public class GlobalServices {
 
                 }else if(id == R.id.sign_out){
                     User.logOut();
-                    DataServices.sendData(AppConfig.LOGOUT_SERVER,null,User.requestQueue,
-                            activity, Constants.METHOD_POST,null);
+//                    DataServices.sendData(AppConfig.LOGOUT_SERVER,null,User.requestQueue,
+//                            activity, Constants.METHOD_POST,null);
                 }
                 return true;
             }

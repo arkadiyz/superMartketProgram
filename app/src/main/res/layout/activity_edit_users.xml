@@ -12,12 +12,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/searchUser_EditText"
-        android:layout_alignParentTop="true"/>
+        android:layout_below="@+id/toolbarMine"/>
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/editUsers_ListView"
         android:layout_below="@+id/searchUser_EditText"/>
-
 
 </RelativeLayout>

@@ -77,7 +77,7 @@ public class CommuicationActivity extends AppCompatActivity {
 
                 }
 
-                customAdapterAlert = new CustomAdapterAlert(this,alerts);
+                customAdapterAlert = new CustomAdapterAlert(this,alerts, true);
                 alertListView.setAdapter(customAdapterAlert);
                 onlineUserSpinner.setAdapter(onlineUsersAdapter);
                 return true;

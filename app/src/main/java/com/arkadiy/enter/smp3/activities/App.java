@@ -7,6 +7,8 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
 
+import com.arkadiy.enter.smp3.dataObjects.Store;
+
 public class App extends Application {
     public static final String CHANNEL_1_ID = "channel1";
     public static final String CHANNEL_2_ID = "channel2";

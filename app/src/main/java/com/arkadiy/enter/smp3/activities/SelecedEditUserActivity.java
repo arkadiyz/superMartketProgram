@@ -23,6 +23,7 @@ import com.arkadiy.enter.smp3.dataObjects.Admin;
 import com.arkadiy.enter.smp3.dataObjects.BuildUser;
 import com.arkadiy.enter.smp3.dataObjects.Department;
 import com.arkadiy.enter.smp3.dataObjects.Manager;
+import com.arkadiy.enter.smp3.dataObjects.Store;
 import com.arkadiy.enter.smp3.dataObjects.User;
 import com.arkadiy.enter.smp3.services.GlobalServices;
 
@@ -131,8 +132,9 @@ public class SelecedEditUserActivity extends AppCompatActivity {
             departmentId = JSuser.getInt("departmentId");
 
             //choose department name
-            ArrayAdapter myAddepartment=(ArrayAdapter)editRooleUsersSpinner.getAdapter();
-            int indexDep= myAd.getPosition(Manager.getRolleNameById((int) departmentId));
+            ArrayAdapter myAddepartment=(ArrayAdapter)departmentsSinner.getAdapter();
+//            int indexDep= myAd.getPosition(Manager.getRolleNameById((int) departmentId));
+            int indexDep= myAddepartment.getPosition(Store.getDepartmentNameById((int) departmentId));
             departmentsSinner.setSelection(indexDep);
 
             editUserCityEditText.setText(JSuser.getString("city"));
@@ -178,6 +180,8 @@ public class SelecedEditUserActivity extends AppCompatActivity {
                         Message msg = new Message();
                         Bundle bundle = iHandler.getData();
                         if (bundle.getInt("response_code") < ResponseCode.ERROR){
+                            Store.showMessage(true,"User value successfully executed");
+
                             Toast.makeText(SelecedEditUserActivity.this,"User value successfully executed",Toast.LENGTH_LONG).show();
                             try {
 
@@ -198,6 +202,7 @@ public class SelecedEditUserActivity extends AppCompatActivity {
                             userConverJson.put("telephone", Integer.parseInt(editUserTelephoneEditText.getText().toString()));
                             userConverJson.put("email", editUserEmailEditText.getText());
                             userConverJson.put("userRole", rollId);
+                            userConverJson.put("managerId",JSuser.opt("managerId"));
 
                             int radioButtonCheked = editSexRadioGroup.getCheckedRadioButtonId();
                             sexRadioBatton  = findViewById(radioButtonCheked);
@@ -211,9 +216,13 @@ public class SelecedEditUserActivity extends AppCompatActivity {
                                 Intent intent = new Intent(SelecedEditUserActivity.this,EditUsersActivity.class);
                                 startActivity(intent);
 
+
                             } catch (JSONException e) {
                                 e.printStackTrace();
+                                Store.showMessage(false,"Something wrong");
                             }
+                        }else{
+                            Store.showMessage(false,"Something wrong");
                         }
                         return true;
                     });

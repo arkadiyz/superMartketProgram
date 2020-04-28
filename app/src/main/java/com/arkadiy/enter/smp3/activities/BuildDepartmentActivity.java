@@ -69,25 +69,29 @@ public class BuildDepartmentActivity extends AppCompatActivity {
         departmentsListView.setAdapter(departmentsAdapter);
 
             departmentSpinnerAdapter = new ArrayAdapter(App.getContext(),android.R.layout.simple_spinner_dropdown_item,departmentsManagerName);
-            departmentManagetSpinner.setAdapter(departmentSpinnerAdapter);
+//            departmentManagetSpinner.setAdapter(departmentSpinnerAdapter);
+
 //        departmentSpinnerAdapter = new ArrayAdapter<Manager>(BuildDepartmentActivity.this,R.layout.support_simple_spinner_dropdown_item,Store.managers);
-//        departmentManagetSpinner.setAdapter(departmentSpinnerAdapter);
+        departmentManagetSpinner.setAdapter(departmentSpinnerAdapter);
 
 
         departmentsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(BuildDepartmentActivity.this, departmentsAdapter.getItem(position),Toast.LENGTH_LONG).show();
+//                Toast.makeText(BuildDepartmentActivity.this, departmentsAdapter.getItem(position),Toast.LENGTH_LONG).show();
                 for (Department d:Store.departments){
                     if (departmentsAdapter.getItem(position) == d.getName()){
                         nameDepartmentEditText.setText(d.getName());
                         departmentsStatusSwitch.setChecked(true);
 
                         ArrayAdapter myAd=(ArrayAdapter)departmentManagetSpinner.getAdapter();
+//                        int index= myAd.getPosition(d.getManager().getUserName());
                         int index= myAd.getPosition(d.getManager().getUserName());
                         departmentManagetSpinner.setSelection(index);
                         managerId =  d.getManager().getUserId();
                         dapertmentId = d.getId();
+                        Toast.makeText(BuildDepartmentActivity.this, String.valueOf(managerId),Toast.LENGTH_LONG).show();
+
 
                     }
                 }

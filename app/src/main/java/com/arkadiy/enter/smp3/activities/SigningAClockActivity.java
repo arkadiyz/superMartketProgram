@@ -2,6 +2,9 @@ package com.arkadiy.enter.smp3.activities;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.LocationManager;
@@ -9,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -44,6 +48,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -56,6 +61,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -84,136 +90,125 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
     private ListView weekWork;
     private CustomAdapterHours customAdapterHours;
     private GoogleMap mMap;
-    private static String pattern="yyyy-MM-dd HH:mm:ss";
-    private static String patternDate="yyyy-MM-dd";
+    private static String pattern = "yyyy-MM-dd HH:mm:ss";
+    private static String patternDate = "yyyy-MM-dd";
     public static final String TIME_SERVER = "time-a.nist.gov";
     public static IHandler timeHandler;
-    public static long TWO_HOURS=7_200_000;
+    public static long TWO_HOURS = 7_200_000;
+    private boolean requestForEntry = true;
+    private boolean requestForExit  = true;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signing_aclock);
+        fixGoogleMapBug();
+        App.setContext(this);
+        requestForEntry = true;
+        requestForExit = true;
 
 //        file = new File(getFilesDir(),FileConfig.SING_IN_A_CLOCK);
-
-
         initGPS();// build GPS items
         listWork = new ArrayList<DayWork>();
         enterDataTextView = (TextView) findViewById(R.id.enterData_TextView);
         exitDataTextView = (TextView) findViewById(R.id.exitData_TextView);
         enterButton = (Button) findViewById(R.id.enter_button);
         exitButton = (Button) findViewById(R.id.exit_Button);
-
-//        userName.setText("Hello "+User.getUserName()); //TODO: FIX THIS
+//      userName.setText("Hello "+User.getUserName()); //TODO: FIX THIS
         requestQueue = Volley.newRequestQueue(this);
-        weekWork = (ListView)findViewById(R.id.hours_ListView);
+        weekWork = (ListView) findViewById(R.id.hours_ListView);
+        GpsChecker.checkGPS(locationManager);
+        GpsChecker.gpsUnable();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        getShiftsFromServer();
+        setOnClickListener();
 
-        User.getShiftsFromServer(iHandlerShifts->{
-            Message msg = new Message();
-            Bundle bundle = iHandlerShifts.getData();
-            try {
-                jsonRes = new JSONObject(bundle.getString("json"));
-                setDayWork(jsonRes);
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return true;
-        });
-
-
-
-
-
-        enterButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                in_out = Constants.SET_IN_OCLOCK;
-
-                checkLocation();
-                try {
-                    getRealTimeDate(handler->{
-
-                        SigningAClockActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-
-                                    enterTime = handler.getData().getString("time");
-                                    endTime = "";
-                                    exitDataTextView.setText(endTime);
-
-                                    //day = getDay();
-                                    sendToServer(enterTime, in_out,enterDataTextView);
-                                    setLocationOnMap();
-
-                            }
-                        });
-
-
-
-                        return true;
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-
-
-            }
-        });
-
-
-        exitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                try {
-                    getRealTimeDate(handler->{
-
-                        SigningAClockActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                endTime = handler.getData().getString("time");
-                                in_out = Constants.SET_OUT_OCLOCK;
-                                checkLocation();
-                                sendToServer(endTime,in_out,exitDataTextView);
-
-
-
-                                setLocationOnMap();
-
-                            }
-                        });
-
-
-
-                        return true;
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-            }
-        });
-        App.setContext(this);
-
-        customAdapterHours = new CustomAdapterHours(SigningAClockActivity.this,listWork);
+        customAdapterHours = new CustomAdapterHours(SigningAClockActivity.this, listWork);
         weekWork.setAdapter(customAdapterHours);
 
-        Toolbar toolbar=(Toolbar)findViewById(R.id.toolbarMine);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarMine);
         setSupportActionBar(toolbar);
-        GlobalServices.addListener(toolbar,this);
+        GlobalServices.addListener(toolbar, this);
 
 
     }
 
+    private void setOnClickListener() {
+
+        enterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (GpsChecker.checkGPS(locationManager) && requestForEntry) {
 
 
+                    requestForEntry = false;
+                    try {
+                        getRealTimeDate(handler -> {
+
+                            SigningAClockActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    enterTime = handler.getData().getString("time");
+                                    endTime = "";
+                                    exitDataTextView.setText(endTime);
+                                    in_out = Constants.SET_IN_OCLOCK;
+                                    checkLocation();
+                                    //day = getDay();
+                                    sendToServer(enterTime, in_out, enterDataTextView);
+                                    setLocationOnMap();
+
+                                }
+                            });
+
+
+                            return true;
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    GpsChecker.gpsUnable();
+                }
+
+            }
+        });
+
+        exitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (GpsChecker.checkGPS(locationManager) && requestForExit) {
+                    try {
+                        requestForExit = false;
+                        getRealTimeDate(handler -> {
+
+                            SigningAClockActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    endTime = handler.getData().getString("time");
+                                    in_out = Constants.SET_OUT_OCLOCK;
+                                    checkLocation();
+                                    sendToServer(endTime, in_out, exitDataTextView);
+                                    setLocationOnMap();
+                                }
+                            });
+                            return true;
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    GpsChecker.gpsUnable();
+                }
+            }
+        });
+
+    }
 
     private void setDayWork(JSONObject jsonResponse) {
 
@@ -225,50 +220,47 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
         String date2 = null;
         long startId = -100;// if null = -100
         long endId = -100;// if null = -100
-        boolean dateNull =false;
+        boolean dateNull = false;
         try {
-            for (int i = 0;i < jsonResponse.getJSONArray("data").length();i++){
+            for (int i = 0; i < jsonResponse.getJSONArray("data").length(); i++) {
 
-                if (!jsonResponse.getJSONArray("data").getJSONObject(i).has("start")){
+                if (!jsonResponse.getJSONArray("data").getJSONObject(i).has("start")) {
                     date1 = "--";
                     dateDay = null;
-                }else {
+                } else {
 
-                    date1 =  jsonResponse.getJSONArray("data").getJSONObject(i).getString("start");
+                    date1 = jsonResponse.getJSONArray("data").getJSONObject(i).getString("start");
                     startId = jsonResponse.getJSONArray("data").getJSONObject(i).getLong("start_id");
                     dateDay = dfForDay.parse(jsonResponse.getJSONArray("data").getJSONObject(i).getString("start"));
 
                 }
-                if (!jsonResponse.getJSONArray("data").getJSONObject(i).has("finish")){
+                if (!jsonResponse.getJSONArray("data").getJSONObject(i).has("finish")) {
                     date2 = "--";
 
-                }else {
+                } else {
                     date2 = jsonResponse.getJSONArray("data").getJSONObject(i).getString("finish");
-                    endId = jsonResponse.getJSONArray("data").getJSONObject(i).getLong("start_id");
-
+                    endId = jsonResponse.getJSONArray("data").getJSONObject(i).getLong("finish_id");
                 }
 
 //            date1 = df.parse(enterTime);
 //            date2 = df.parse(endTime);
-                if ( jsonResponse.getJSONArray("data").getJSONObject(i).has("hours")){
+                if (jsonResponse.getJSONArray("data").getJSONObject(i).has("hours")) {
 
                     //long diff = date2.getTime() - date1.getTime();
-                    sumTime =  jsonResponse.getJSONArray("data").getJSONObject(i).getString("hours");
+                    sumTime = jsonResponse.getJSONArray("data").getJSONObject(i).getString("hours");
 
-                }
-                else {
-                    sumTime ="--";
-                    if (dateDay == null){
+                } else {
+                    sumTime = "--";
+                    if (dateDay == null) {
                         dateDay = dfForDay.parse(jsonResponse.getJSONArray("data").getJSONObject(i).getString("finish"));
                     }
                 }
 
 
-
                 // sumTime =  jsonResponse.getJSONArray("data").getJSONObject(i).getString("hours");
 //        sumTime = String.valueOf(diff);
-                addDayToList(dateDay,date1,date2,startId,endId);
-                dateDay =  null;
+                addDayToList(dateDay, date1, date2, startId, endId);
+                dateDay = null;
 
             }
         } catch (ParseException e) {
@@ -279,7 +271,7 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
     }
 
 
-    public static void getRealTimeDate(IHandler timeHandler) throws Exception{
+    public static void getRealTimeDate(IHandler timeHandler) throws Exception {
 
         AsyncTask.execute(new Runnable() {
             @Override
@@ -290,15 +282,15 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
                     inetAddress = InetAddress.getByName(TIME_SERVER);
                     TimeInfo timeInfo = timeClient.getTime(inetAddress);
                     long returnTime = timeInfo.getReturnTime();
-                    returnTime+=TWO_HOURS;
+                    //returnTime+=TWO_HOURS;
                     Date time = new Date(returnTime);
 
                     SimpleDateFormat df = new SimpleDateFormat(pattern);
                     String StringDate = df.format(time);
 
-                    Message msg=new Message();
-                    Bundle bundle=new Bundle();
-                    bundle.putString("time",StringDate);
+                    Message msg = new Message();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("time", StringDate);
                     msg.setData(bundle);
                     timeHandler.sendMessage(msg);
 
@@ -314,26 +306,28 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
     }
 
 
-    private void addDayToList(java.util.Date dateDay,String date1,String date2,long startId,long endId){
-        dayWork = new DayWork(getDay(dateDay),date1,date2,sumTime,startId,endId);
+    private void addDayToList(java.util.Date dateDay, String date1, String date2, long startId, long endId) {
+        dayWork = new DayWork(getDay(dateDay), date1, date2, sumTime, startId, endId);
         listWork.add(dayWork);
         customAdapterHours.notifyDataSetChanged();
 
     }
 
-    private void addDayToListByIdAndWay(java.util.Date dateNew,String dateString,long id,int way){
+    private void addDayToListByIdAndWay(java.util.Date dateNew, String dateString, long id, int way) {
 
-        if(way==1){
-            dayWork = new DayWork(getDay(dateNew),dateString,"--","0.0",id,-100);
+        if (way == 1) {
+            dayWork = new DayWork(getDay(dateNew), dateString, "--", "0.0", id, -100);
             listWork.add(dayWork);
-        }else{
-            DayWork work =  listWork.get(listWork.size()-1);
-                Date dateOld= stringToDate(work.getStart(),patternDate);
-                if(dateOld.compareTo(dateNew)==0){
-                    work.setEnd(dateString);
-                    work.setEndId(id);
-                    String sum=calculateDifference(work.getStart(),dateString);
-                    work.setSum(sum);
+
+        } else {
+
+            DayWork work = listWork.get(listWork.size() - 1);
+            Date dateOld = stringToDate(work.getStart(), patternDate);
+            if (dateOld.compareTo(dateNew) == 0) {
+                work.setEnd(dateString);
+                work.setEndId(id);
+                String sum = calculateDifference(work.getStart(), dateString);
+                work.setSum(sum);
 
             }
         }
@@ -344,21 +338,21 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
     }
 
     private String calculateDifference(String start, String end) {
-        Date dateStart= stringToDate(start,pattern);
-        Date dateEnd= stringToDate(end,pattern);
+        Date dateStart = stringToDate(start, pattern);
+        Date dateEnd = stringToDate(end, pattern);
 
-        long diffInMilli=dateEnd.getTime()-dateStart.getTime();
+        long diffInMilli = dateEnd.getTime() - dateStart.getTime();
 
-         long hours = TimeUnit.MILLISECONDS.toHours(diffInMilli);
+        long hours = TimeUnit.MILLISECONDS.toHours(diffInMilli);
 
-         long minutes = (TimeUnit.MILLISECONDS.toMinutes(diffInMilli)
+        long minutes = (TimeUnit.MILLISECONDS.toMinutes(diffInMilli)
                 - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(diffInMilli)));
 
-         return hours+"."+minutes;
+        return hours + "." + minutes;
 
     }
 
-    public void sendToServer(String time, int in_out,TextView textView) {
+    public void sendToServer(String time, int in_out, TextView textView) {
 
 
         try {
@@ -367,30 +361,29 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
             jsonClock.put("Longtitude", Double.parseDouble(checker.getLongtitude()));
             jsonClock.put("in_out", in_out); // in_out String
             jsonClock.put("date_time", String.valueOf(time)); // time String
-            jsonClock.put("gps",User.getGPSAnuble());
+            jsonClock.put("gps", User.getGPSAnuble());
             User.punchClock(SigningAClockActivity.this, jsonClock, AppConfig.PUNCH_CLOCK, requestQueue, iHandler -> {
                 try {
 
                     JSONObject json;
                     Bundle bundle = iHandler.getData();
 
-                        json =new JSONObject(bundle.getString("json"));
-                        long id=json.getLong("id");
+                    json = new JSONObject(bundle.getString("json"));
+                    long id = json.getLong("id");
 
 
+                    if (iHandler.getData().getInt(ConstantsJson.RESPONSE_CODE) == ResponseCode.NOT_IN_RANGE) {
 
-                     if (iHandler.getData().getInt(ConstantsJson.RESPONSE_CODE) == ResponseCode.NOT_IN_RANGE) {
+                    } else if (iHandler.getData().getInt(ConstantsJson.RESPONSE_CODE) == ResponseCode.PUNCH_CLOCK) {
+                        Toast.makeText(App.getContext(), "Clock stamping was successful ", Toast.LENGTH_LONG).show();
+                        textView.setText(time);
+                        Date date = stringToDate(time, patternDate);
+                        addDayToListByIdAndWay(date, time, id, in_out);
 
-                      } else if (iHandler.getData().getInt(ConstantsJson.RESPONSE_CODE) == ResponseCode.PUNCH_CLOCK) {
-                         Toast.makeText(App.getContext(),"Clock stamping was successful ",Toast.LENGTH_LONG).show();
-                           textView.setText(time);
-                        Date date= stringToDate(time,patternDate);
-                         addDayToListByIdAndWay(date,time,id,in_out);
-
-                            //chengVisibility(time);
-                      }else {
-                         Toast.makeText(App.getContext(),json.getString("message"),Toast.LENGTH_LONG).show();
-                     }
+                        //chengVisibility(time);
+                    } else {
+                        Toast.makeText(App.getContext(), json.getString("message"), Toast.LENGTH_LONG).show();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -411,9 +404,9 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
         return StringDate;
     }
 
-    private Date stringToDate(String aDate,String aFormat) {
+    private Date stringToDate(String aDate, String aFormat) {
 
-        if(aDate==null) return null;
+        if (aDate == null) return null;
         ParsePosition pos = new ParsePosition(0);
         SimpleDateFormat simpledateformat = new SimpleDateFormat(aFormat);
         Date stringDate = simpledateformat.parse(aDate, pos);
@@ -421,7 +414,7 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
 
     }
 
-    public int getDay(Date day){
+    public int getDay(Date day) {
         Calendar c = Calendar.getInstance();
         c.setTime(day);
         //c.setTime(Calendar.getInstance().getTime());
@@ -449,7 +442,7 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
 //
 //                }
 
-               // sendToServer(date, in_out);
+                // sendToServer(date, in_out);
             }
             return true;
         });
@@ -467,7 +460,6 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
 //        locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
 
-
         checker.run();
         criteria = new Criteria();
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
@@ -478,12 +470,13 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
         criteria.setBearingRequired(false);
         criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
         criteria.setVerticalAccuracy(Criteria.ACCURACY_HIGH);
-        locationManager.requestLocationUpdates(1000,1,criteria,checker,null);
+        locationManager.requestLocationUpdates(1000, 1, criteria, checker, null);
 //        locationManager.removeUpdates(checker);
 //        locationManager=null;
 
     }
-    private void checkLocation(){
+
+    private void checkLocation() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED &&
@@ -500,30 +493,64 @@ public class SigningAClockActivity extends AppCompatActivity implements Activity
         }
         //
         // locationManager.requestLocationUpdates(1000,1,criteria,checker,null);
-        locationManager.requestSingleUpdate("gps",checker,null);
+        locationManager.requestSingleUpdate("gps", checker, null);
 
     }
-
-
 
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
     }
-    private void setLocationOnMap(){
-        // Add a marker in Sydney, Australia, and move the camera.
-        LatLng location = new LatLng(Double.parseDouble(checker.getLatitude()),Double.parseDouble(checker.getLongtitude()));
-        float zoomLevel = 15.0f;
-        mMap.addMarker(new MarkerOptions().position(location).title("Your Location"));
-        // mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney,zoomeLevel));
-        CameraUpdate myLocation = CameraUpdateFactory.newLatLngZoom(location,zoomLevel);
-        mMap.animateCamera(myLocation);
+
+    private void setLocationOnMap() {
+        if (mMap != null) {
+            // Add a marker in Sydney, Australia, and move the camera.
+            LatLng location = new LatLng(Double.parseDouble(checker.getLatitude()), Double.parseDouble(checker.getLongtitude()));
+            float zoomLevel = 15.0f;
+            mMap.addMarker(new MarkerOptions().position(location).title("Your Location"));
+            //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney,zoomeLevel));
+//            CameraUpdate myLocation = CameraUpdateFactory.newLatLngZoom(location, zoomLevel);
+//            mMap.animateCamera(myLocation);
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu,menu);
+        getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
+
+
+    private void fixGoogleMapBug() {
+        SharedPreferences googleBug = getSharedPreferences("google_bug", Context.MODE_PRIVATE);
+        if (!googleBug.contains("fixed")) {
+            File corruptedZoomTables = new File(getFilesDir(), "ZoomTables.data");
+            corruptedZoomTables.delete();
+            googleBug.edit().putBoolean("fixed", true).apply();
+        }
+    }
+
+    private void getShiftsFromServer() {
+
+        User.getShiftsFromServer(iHandlerShifts -> {
+            Message msg = new Message();
+            Bundle bundle = iHandlerShifts.getData();
+
+            try {
+                jsonRes = new JSONObject(bundle.getString("json"));
+                if (jsonRes != null && jsonRes.getJSONArray("data") != null) {
+                    setDayWork(jsonRes);
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            return true;
+        });
+
+    }
+
+
 }

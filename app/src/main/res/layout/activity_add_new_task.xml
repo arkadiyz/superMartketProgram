@@ -1,220 +1,231 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".activities.AddNewTaskActivity">
 
 
     <include layout="@layout/toolbar" />
 
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/nameTask_EditText"
+        android:layout_below="@+id/toolbarMine"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="Task Name"
+        android:textColor="@color/black">
 
-    <LinearLayout
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:orientation="vertical"
+    </TextView>
+
+
+    <EditText
+        android:id="@+id/nameTask_EditText"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/assign_textView"
+        android:layout_centerInParent="true"
+        android:defaultFocusHighlightEnabled="true"
+        android:drawableRight="@drawable/ic_edit_pen"
+        android:gravity="center_horizontal"
+        android:inputType="text" />
+
+    <TextView
+        android:id="@+id/assign_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/switchUsers"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="Assign"
+        android:textColor="@color/black">
+
+    </TextView>
+
+
+    <Spinner
+        android:id="@+id/departmants_Spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/workers_Spinner"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="5sp"
+        android:layout_toStartOf="@+id/centerShim2_add_new_task">
+
+    </Spinner>
+
+
+    <Switch
+        android:id="@+id/switchUsers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/workers_Spinner"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/centerShim2_add_new_task"
+        android:checked="true"
+        android:text="Personal"
+        android:textOff="OFF"
+
+        android:textOn="ON"
+        android:textSize="25sp" />
+
+
+    <Spinner
+        android:id="@+id/workers_Spinner"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="38dp"
+        android:layout_above="@+id/linespace_textVew_spenner_View"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="5sp"
+        android:layout_marginEnd="5sp"
+        android:layout_marginTop="10sp">
 
-        <TextView
-            android:layout_width="100dp"
+    </Spinner>
 
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="130dp"
-            android:paddingLeft="10dp"
-            android:text="Task Name"
-            android:textColor="@color/black">
-
-        </TextView>
-
-
-        <EditText
-            android:id="@+id/nameTask_EditText"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="80dp"
-            android:layout_marginBottom="30dp"
-            android:defaultFocusHighlightEnabled="true"
-            android:drawableRight="@drawable/ic_edit_pen"
-            android:gravity="center_horizontal"
+    <View
+        android:id="@+id/linespace_textVew_spenner_View"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_above="@+id/to_date_TextView"
+        android:layout_marginBottom="20sp"
+        android:background="@android:color/darker_gray" />
 
 
-            android:inputType="text" />
+    <View
+        android:id="@+id/centerShim_add_new_task"
+        android:layout_width="match_parent"
+        android:layout_height="0sp"
+        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="150dp"
-            android:text="Assign"
-            android:textColor="@color/black">
+    <View
+        android:id="@+id/centerShim2_add_new_task"
+        android:layout_width="0sp"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible" />
 
-        </TextView>
+    <TextView
+        android:id="@+id/from_date_texView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/centerShim_add_new_task"
+        android:layout_marginStart="25sp"
+        android:text="From Date"
+        android:textColor="@color/black">
 
+    </TextView>
 
-        <LinearLayout
+    <TextView
+        android:id="@+id/to_date_TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/centerShim_add_new_task"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="25sp"
+        android:text="To Date"
+        android:textColor="@color/black">
 
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-
-            <Spinner
-                android:id="@+id/departmants_Spinner"
-                android:layout_width="200dp"
-                android:layout_height="38dp"></Spinner>
-
-
-            <Switch
-                android:id="@+id/switchUsers"
-                android:layout_width="140dp"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/map"
-                android:checked="true"
-                android:text="Personal"
-                android:textOff="OFF"
-                android:textOn="ON"
-                android:textSize="20dp" />
-
-
-
-
-
-        </LinearLayout>
+    </TextView>
 
 
+    <EditText
+        android:id="@+id/editStartDate_EditText"
+        android:layout_width="145sp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/from_date_texView"
+        android:layout_alignParentStart="true"
+        android:clickable="false"
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:gravity="center_horizontal"
+        android:hint="DD-MM-YYYY"
+        android:inputType="date" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/from_date_texView"
+        android:layout_toStartOf="@+id/editEnd_EditText"
+        android:layout_toEndOf="@+id/editStartDate_EditText"
+        android:paddingTop="5dp"
+
+        android:src="@drawable/ic_arrow_forward" />
 
 
-        <Spinner
-            android:id="@+id/workers_Spinner"
-            android:layout_width="200dp"
-            android:layout_height="38dp"
-            android:layout_marginRight="30dp"
-            >
+    <EditText
+        android:id="@+id/editEnd_EditText"
+        android:layout_width="145sp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/to_date_TextView"
+        android:layout_alignParentEnd="true"
+        android:clickable="false"
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:gravity="center_horizontal"
+        android:hint="DD-MM-YYYY"
+        android:inputType="date" />
 
-        </Spinner>
-        <View
-            android:layout_marginBottom="30dp"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray"/>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:paddingLeft="70dp"
-                android:text="From Date"
-                android:textColor="@color/black">
-
-            </TextView>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="To Date"
-                android:textColor="@color/black"
-                android:paddingLeft="100dp"
-
-                >
-
-            </TextView>
-
-        </LinearLayout>
+    <View
+        android:id="@+id/cpase_desc_date_add_new_task"
+        android:layout_width="match_parent"
+        android:layout_height="0sp"
+        android:layout_below="@+id/editStartDate_EditText"
+        android:visibility="invisible" />
 
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="30sp"
-            android:orientation="horizontal"
-            android:paddingBottom="50dp">
+    <TextView
+        android:id="@+id/decription_add_new_task_TextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/cpase_desc_date_add_new_task"
+        android:gravity="center"
+        android:text="Description"
+        android:textColor="@color/black">
 
-            <EditText
-                android:id="@+id/editStartDate_EditText"
-                android:layout_width="145sp"
-                android:layout_height="wrap_content"
-                android:clickable="false"
-                android:cursorVisible="false"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:gravity="center_horizontal"
-                android:hint="DD-MM-YYYY"
-                android:inputType="date" />
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingTop="5dp"
-                android:src="@drawable/ic_arrow_forward" />
+    </TextView>
 
 
-            <EditText
-                android:id="@+id/editEnd_EditText"
-                android:layout_width="145sp"
-                android:layout_height="wrap_content"
-                android:clickable="false"
-                android:cursorVisible="false"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:gravity="center_horizontal"
-                android:hint="DD-MM-YYYY"
-                android:inputType="date" />
+    <EditText
+        android:id="@+id/taskDecription_EditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/creatNewTask_button"
+        android:layout_below="@+id/decription_add_new_task_TextView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="10sp"
+        android:layout_marginEnd="10sp"
+        android:background="@drawable/border_style"
+        android:ems="10"
+        android:gravity="top"
+        android:inputType="textMultiLine" />
 
 
-        </LinearLayout>
+    <Button
+        android:id="@+id/creatNewTask_button"
+        android:layout_width="300dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="30sp"
+        android:layout_marginBottom="15sp"
+        android:background="@drawable/button_main"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="5"
+        android:text="SUBMIT"
+        android:textColor="@color/white"
+        android:textSize="30sp" />
 
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="145dp"
-            android:text="Description"
-            android:textColor="@color/black">
-
-        </TextView>
-
-
-
-        <EditText
-            android:id="@+id/taskDecription_EditText"
-            android:layout_width="match_parent"
-            android:layout_height="163dp"
-            android:layout_centerHorizontal="true"
-            android:ems="10"
-            android:inputType="textMultiLine"
-            android:gravity="top"
-            android:background="@drawable/border_style"
-            />
-
-
-        <Button
-            android:id="@+id/creatNewTask_button"
-            android:layout_width="300dp"
-            android:layout_height="50dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="30sp"
-            android:background="@drawable/button_main"
-            android:shadowDx="0"
-            android:shadowDy="0"
-            android:shadowRadius="5"
-            android:text="SUBMIT"
-            android:textColor="@color/white"
-
-            android:textSize="30sp" />
-
-
-    </LinearLayout>
-
-
-
-
-
-</LinearLayout>
+</RelativeLayout>

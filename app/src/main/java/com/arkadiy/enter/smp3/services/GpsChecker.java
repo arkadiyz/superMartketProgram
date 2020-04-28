@@ -1,34 +1,43 @@
 package com.arkadiy.enter.smp3.services;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Message;
+import android.provider.Settings;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+
+import com.arkadiy.enter.smp3.activities.App;
 import com.arkadiy.enter.smp3.dataObjects.IHandler;
+
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 /**
  * Created by vadnu on 11/30/2018.
  */
 
 public class GpsChecker implements LocationListener, Runnable {
+
     LocationManager locationManager;
     Context context;
     String latitude;
     String longtitude;
     IHandler handler;
-
-
+    private static boolean gps_enabled = false;
+    private static boolean network_enabled = false;
 
 
     public GpsChecker(LocationManager locationManager, Context context, IHandler handler) {
 
         this.locationManager = locationManager;
-        this.context=context;
-        this.handler=handler;
+        this.context = context;
+        this.handler = handler;
 
     }
 
@@ -38,7 +47,6 @@ public class GpsChecker implements LocationListener, Runnable {
         //Toast.makeText(this.context,"Location111 "+location.toString(), Toast.LENGTH_LONG).show();
 
     }
-
 
 
     @Override
@@ -76,8 +84,8 @@ public class GpsChecker implements LocationListener, Runnable {
             setLatitude(String.valueOf(location.getLatitude()));
             setLongtitude(String.valueOf(location.getLongitude()));
 
-            String x="Latitude is--> "+location.getLatitude();
-            String y="Longtitude is--> "+location.getLongitude();
+            String x = "Latitude is--> " + location.getLatitude();
+            String y = "Longtitude is--> " + location.getLongitude();
 
 
             //Toast.makeText(this.context,"LATITUDE="+x+" LONGTITUDE="+y, Toast.LENGTH_LONG).show();
@@ -94,8 +102,8 @@ public class GpsChecker implements LocationListener, Runnable {
 //            bundle.putBoolean("status",false);
 //            msg.setData(bundle);
 //            handler.sendMessage(msg);
-       }
-            sendDataToHandler(handler);
+        }
+        sendDataToHandler(handler);
 
 
 //        txtview.setText(x+"\n"+y);
@@ -103,18 +111,18 @@ public class GpsChecker implements LocationListener, Runnable {
 
     }
 
-    public static void sendDataToHandler(IHandler handler){
+    public static void sendDataToHandler(IHandler handler) {
         Message msg = new Message();
         Bundle bundle = new Bundle();
 
-        if(handler!=null){
-            bundle.putBoolean("json",true);
+        if (handler != null) {
+            bundle.putBoolean("json", true);
             msg.setData(bundle);
             handler.sendMessage(msg);
 
-        }else{
+        } else {
 
-            bundle.putBoolean("status",false);
+            bundle.putBoolean("status", false);
             msg.setData(bundle);
             handler.sendMessage(msg);
         }
@@ -139,7 +147,7 @@ public class GpsChecker implements LocationListener, Runnable {
     @Override
     public void onProviderDisabled(String provider) {
 //        txtview.setText(provider.toString());
-       // Toast.makeText(this.context,"provider disabled"+provider, Toast.LENGTH_LONG).show();
+        // Toast.makeText(this.context,"provider disabled"+provider, Toast.LENGTH_LONG).show();
 
     }
 
@@ -159,4 +167,56 @@ public class GpsChecker implements LocationListener, Runnable {
         this.longtitude = longtitude;
     }
 
+
+    public static void gpsUnable(){
+
+        if(!gps_enabled && !network_enabled) {
+            // notify user
+            new SweetAlertDialog(App.getContext(), SweetAlertDialog.WARNING_TYPE)
+                    .setTitleText("Oops..." +
+                            "" +
+                            "")
+                    .setContentText("Please turn on Location Services (GPS)")
+                    .setConfirmText("enabled")
+                    .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                        @Override
+                        public void onClick(SweetAlertDialog sDialog) {
+                            App.getContext().startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        }
+                    })
+                    .setCancelButton("Cancel", new SweetAlertDialog.OnSweetClickListener() {
+                        @Override
+                        public void onClick(SweetAlertDialog sDialog) {
+                            sDialog.dismissWithAnimation();
+                        }
+                    })
+                    .show();
+
+//            new AlertDialog.Builder(App.getContext())
+//                    .setMessage("gps is not enabled")
+//                    .setPositiveButton("open location settings", new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+//                                    App.getContext().startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+//                                }
+//                            }
+//                    ).setNegativeButton("Cancel",null)
+//                    .show();
+        }
+
+    }
+
+    public static boolean checkGPS(LocationManager locationManager){
+        try {
+            gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            network_enabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+        } catch(Exception ex) {}
+        if (gps_enabled && network_enabled){
+            return true;
+        }else {
+            return false;
+        }
+
+    }
 }

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -19,6 +20,7 @@ import com.arkadiy.enter.smp3.R;
 import com.arkadiy.enter.smp3.dataObjects.Alert;
 import com.arkadiy.enter.smp3.dataObjects.CustomAdapterAlert;
 import com.arkadiy.enter.smp3.dataObjects.Task;
+import com.arkadiy.enter.smp3.dataObjects.User;
 import com.arkadiy.enter.smp3.services.GlobalServices;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
 
@@ -27,7 +29,7 @@ import java.util.ArrayList;
 public class IncomingAlerts extends AppCompatActivity {
 
     private ImageButton sendNewAlert;
-    private static ArrayList<Alert> alerts;
+    public static ArrayList<Alert> alerts;
     private static CustomAdapterAlert customAdapterAlert;
     private RequestQueue requestQueue;
     public static ListView alertListView;
@@ -45,12 +47,13 @@ public class IncomingAlerts extends AppCompatActivity {
         sendNewAlert=(ImageButton) findViewById(R.id.sendNewAlert);
         requestQueue = Volley.newRequestQueue(this);
         alertListView = (ListView)findViewById(R.id.listViewAlerts);
-        alerts=new ArrayList<>();
+
+//        alerts=new ArrayList<>();
 
 
         //go to server and get alerts
 
-        customAdapterAlert = new CustomAdapterAlert(this,alerts);
+        customAdapterAlert = new CustomAdapterAlert(this,User.incomingAlerts ,false);
         alertListView.setAdapter(customAdapterAlert);
 
 
@@ -63,7 +66,14 @@ public class IncomingAlerts extends AppCompatActivity {
             }
         });
 
+        alertListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                customAdapterAlert.remove(User.incomingAlerts.remove(position));
+//                User.incomingAlerts.remove(position);
 
+            }
+        });
     }
 
     @Override

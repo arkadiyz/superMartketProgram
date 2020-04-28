@@ -81,7 +81,7 @@ public class EditAlertActivity extends AppCompatActivity {
         sendEditAlertButton = (Button)findViewById(R.id.sendEditAlert_Button);
 
         editAlerts = (ArrayList<Alert>) Store.getAlerts();
-        customEditAdapterAlert = new CustomAdapterAlert(this,editAlerts);
+        customEditAdapterAlert = new CustomAdapterAlert(this,editAlerts , true);
         editAlertListView.setAdapter(customEditAdapterAlert);
         //{"name":"hohoho 2", "description":"hey dude hey", "id":14 }
         deleteAlertSwitch.setChecked(true);

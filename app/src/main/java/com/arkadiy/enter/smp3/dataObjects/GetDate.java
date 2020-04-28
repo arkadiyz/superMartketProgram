@@ -31,12 +31,13 @@ public class GetDate {
     private static Calendar mCurrentDate;
     private static Calendar mCurrentTime;
     private static ArrayList<DayWork> listWork;
-    public static void getDate(final EditText editText){
+
+    public static void getDate(final EditText editText) {
 
         mCurrentDate = Calendar.getInstance();
         mCurrentTime = Calendar.getInstance();
         int year = mCurrentDate.get(Calendar.YEAR);
-        int month = mCurrentDate.get(Calendar.MONTH)+1;
+        int month = mCurrentDate.get(Calendar.MONTH) + 1;
         int day = mCurrentDate.get(Calendar.DAY_OF_MONTH);
         final int hour = mCurrentTime.get(Calendar.HOUR_OF_DAY);
         final int minute = mCurrentTime.get(Calendar.MINUTE);
@@ -48,27 +49,36 @@ public class GetDate {
             public void onDateSet(DatePicker datePicker, final int selectYear, final int selectMonth, final int selectDay) {
 
                 //editText.setText(selectDay+"-"+selectMonth+"-"+selectYear);
-                mCurrentDate.set(selectYear,selectMonth,selectDay);
+                mCurrentDate.set(selectYear, selectMonth, selectDay);
 
                 TimePickerDialog timePickerDialog = new TimePickerDialog(App.getContext(), new TimePickerDialog.OnTimeSetListener() {
 
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectHour, int selectMinute) {
 
-                        editText.setText(selectYear+"-"+selectMonth+"-"+selectDay +" "+selectHour+":"+selectMinute);
+
+
+                        String month,day,hour,minute,seconds="00";
+                        month=String.valueOf(selectMonth).length()==1?"0"+selectMonth:String.valueOf(selectMonth);
+                        day=String.valueOf(selectDay).length()==1?"0"+selectDay:String.valueOf(selectDay);
+                        hour=String.valueOf(selectHour).length()==1?"0"+selectHour:String.valueOf(selectHour);
+                        minute=String.valueOf(selectMinute).length()==1?"0"+selectMinute:String.valueOf(selectMinute);
+
+                        editText.setText(selectYear+"-"+month+"-"+day +" "+hour+":"+minute+":"+seconds);
                         mCurrentTime = Calendar.getInstance();
                         mCurrentDate.set(Calendar.HOUR_OF_DAY, selectHour);
                         mCurrentDate.set(Calendar.MINUTE, selectMinute);
+
                     }
-                },hour,minute,true);
+                }, hour, minute, true);
                 timePickerDialog.show();
             }
-        }, year , month,day );
+        }, year, month, day);
         datePickerDialog.show();
 
     }
 
-    public static int getDay(Date day){
+    public static int getDay(Date day) {
         Calendar c = Calendar.getInstance();
         c.setTime(day);
         //c.setTime(Calendar.getInstance().getTime());
@@ -87,52 +97,51 @@ public class GetDate {
         long startId = -100;// if null = -100
         long endId = -100;// if null = -100
         String sumTime;
-        boolean dateNull =false;
+        boolean dateNull = false;
         try {
             listWork = new ArrayList<>();
-            for (int i = 0;i < jsonResponse.getJSONArray("data").length();i++){
-
-                if (!jsonResponse.getJSONArray("data").getJSONObject(i).has("start")){
+            for (int i = 0; i < jsonResponse.getJSONArray("data").length(); i++) {
+                startId = -100;
+                endId = -100;
+                if (!jsonResponse.getJSONArray("data").getJSONObject(i).has("start")) {
                     date1 = "--";
                     dateDay = null;
-                }else {
+                } else {
 
-                    date1 =  jsonResponse.getJSONArray("data").getJSONObject(i).getString("start");
+                    date1 = jsonResponse.getJSONArray("data").getJSONObject(i).getString("start");
                     startId = jsonResponse.getJSONArray("data").getJSONObject(i).getLong("start_id");
                     dateDay = dfForDay.parse(date1);
 
                 }
-                if (!jsonResponse.getJSONArray("data").getJSONObject(i).has("finish")){
+                if (!jsonResponse.getJSONArray("data").getJSONObject(i).has("finish")) {
                     date2 = "--";
 
-                }else {
+                } else {
                     date2 = jsonResponse.getJSONArray("data").getJSONObject(i).getString("finish");
                     endId = jsonResponse.getJSONArray("data").getJSONObject(i).getLong("finish_id");
                 }
 
 //            date1 = df.parse(enterTime);
 //            date2 = df.parse(endTime);
-                if ( jsonResponse.getJSONArray("data").getJSONObject(i).has("hours")){
+                if (jsonResponse.getJSONArray("data").getJSONObject(i).has("hours")) {
 
                     //long diff = date2.getTime() - date1.getTime();
-                    sumTime =  jsonResponse.getJSONArray("data").getJSONObject(i).getString("hours");
+                    sumTime = jsonResponse.getJSONArray("data").getJSONObject(i).getString("hours");
 
-                }
-                else {
-                    sumTime ="--";
-                    if (dateDay == null){
+                } else {
+                    sumTime = "--";
+                    if (dateDay == null) {
                         dateDay = dfForDay.parse(jsonResponse.getJSONArray("data").getJSONObject(i).getString("finish"));
                     }
                 }
 
 
-
                 // sumTime =  jsonResponse.getJSONArray("data").getJSONObject(i).getString("hours");
 //        sumTime = String.valueOf(diff);
-                dayWork = new DayWork(getDay(dateDay),date1,date2,sumTime,startId,endId);
+                dayWork = new DayWork(getDay(dateDay), date1, date2, sumTime, startId, endId);
                 listWork.add(dayWork);
 //              customAdapterHours.notifyDataSetChanged();
-                dateDay =  null;
+                dateDay = null;
 
             }
             return listWork;
@@ -143,6 +152,7 @@ public class GetDate {
         }
         return null;
     }
+
     public static String getToDate() {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String StringDate = df.format(Calendar.getInstance().getTime());
@@ -150,19 +160,32 @@ public class GetDate {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public static String plusHours(String date){
+    public static String plusHours(String date) {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Calendar cal = Calendar.getInstance(); // creates calendar
         try {
             cal.setTime(df.parse(date)); // sets calendar time/date
 
-        cal.add(Calendar.HOUR_OF_DAY, 8); // adds four hour
-        String date1 = df.format(cal.getTime()); // returns new date object
+            cal.add(Calendar.HOUR_OF_DAY, 8); // adds four hour
+            String date1 = df.format(cal.getTime()); // returns new date object
             return date1;
         } catch (ParseException e) {
             e.printStackTrace();
         }
         return "";
     }
+
+    public static Date getDateFromString(String date){
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date startDate;
+        try {
+            startDate = df.parse(date);
+            return startDate;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
 }

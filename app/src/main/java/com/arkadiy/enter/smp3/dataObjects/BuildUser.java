@@ -187,7 +187,7 @@ public class BuildUser {
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        this.email = email;//8
     }
 
     public void setRole(int role) {

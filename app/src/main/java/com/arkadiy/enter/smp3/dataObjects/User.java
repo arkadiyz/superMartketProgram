@@ -27,7 +27,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +62,7 @@ public class User {
     private int groupId;
     private int managerId;
     public static ArrayList<Task>myTasks;
-    private List<Alert>recivedAlerts;
+    private static List<Alert>recivedAlerts;
     private List<Alert>sentAlerts;
     private List<Shift>lastShifts;
     public static RequestQueue requestQueue;
@@ -74,6 +73,7 @@ public class User {
     private static String myEmail;
     private static int myRole;
     private static int myDepartmentId;
+    public static ArrayList<Alert> incomingAlerts;
     private  int departmentId;
     private static int GPSAnuble;
     private static int numberNewTack; //TODO sum new task in this var
@@ -83,12 +83,13 @@ public class User {
 
 
     public User() {
+        incomingAlerts = new ArrayList<>();
+
     }
 
-    public User(JSONObject jsonObject) {
-
+    public User(JSONObject jsonObject ,int idDep) {
         try {
-            if(allDataExists(jsonObject)){
+            if(allDataExists(jsonObject ,idDep)){
                 this.city = jsonObject.getString("city");
                 this.email = jsonObject.getString("email");
                 this.status = jsonObject.getInt("status");
@@ -108,9 +109,47 @@ public class User {
                 this.phone = jsonObject.getString("telephone");
                 this.userFirstName = jsonObject.getString("userFirstName");
                 this.userLastName = jsonObject.getString("userLastName");
-                this.myEmail = jsonObject.getString("email");
                 //TODO: create GPS parameters
                 //TODO: check if simple user get value -1 if yes delete operator if
+                this.departmentId = idDep;
+            }else{
+                System.out.println("++++++++++++   User doesn't have all the needed data ++++++++++++");
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    public User(JSONObject jsonObject) {
+        try {
+            if(allDataExists(jsonObject,-1)){
+                this.city = jsonObject.getString("city");
+                this.email = jsonObject.getString("email");
+                this.status = jsonObject.getInt("status");
+                this.userId = jsonObject.getLong("userID");
+                //TODO i need get this parameters from server
+                this.street = jsonObject.getString("street");
+
+                this.houseNumber = jsonObject.optInt("houseNumber");
+                this.sex = jsonObject.optInt("sex");
+                this.doorNumber = jsonObject.optInt("doorNumber");
+                this.telephone = jsonObject.optInt("telephone");
+                this.userName = jsonObject.getString("userName");
+                this.password = jsonObject.getString("password");
+                this.role = jsonObject.getInt("userRole");
+
+                this.managerId = jsonObject.optInt("managerId");
+                this.phone = jsonObject.getString("telephone");
+                this.userFirstName = jsonObject.getString("userFirstName");
+                this.userLastName = jsonObject.getString("userLastName");
+                this.email = jsonObject.getString("email");
+                //TODO: create GPS parameters
+                //TODO: check if simple user get value -1 if yes delete operator if
+                //2
                 this.departmentId = jsonObject.getInt(ConstantsJson.DEPARTMENT_ID);
             }else{
                 System.out.println("++++++++++++   User doesn't have all the needed data ++++++++++++");
@@ -124,32 +163,35 @@ public class User {
 
     }
 
-    private boolean allDataExists(JSONObject jsonObject) {
-
-       return jsonObject.has("city") &&
-        jsonObject.has("email") &&
-        jsonObject.has("status") &&
-        jsonObject.has("userID") &&
-        jsonObject.has("street") &&
-        jsonObject.has("houseNumber") &&
-        jsonObject.has("sex") &&
-        jsonObject.has("doorNumber") &&
-        jsonObject.has("telephone") &&
-        jsonObject.has("userName") &&
-        jsonObject.has("password") &&
-        jsonObject.has("userRole") &&
-        jsonObject.has("managerId") &&
-        jsonObject.has("telephone") &&
-        jsonObject.has("userFirstName") &&
-        jsonObject.has("userLastName") &&
-        jsonObject.has("email") &&
-        jsonObject.has(ConstantsJson.DEPARTMENT_ID);
+    private boolean allDataExists(JSONObject jsonObject,int idDep) {
+        if (idDep >= 0){
+            if (jsonObject.has("city") && jsonObject.has("email") && jsonObject.has("status") && jsonObject.has("userID") &&
+                    jsonObject.has("street") && jsonObject.has("houseNumber") && jsonObject.has("sex") && jsonObject.has("doorNumber") &&
+                    jsonObject.has("telephone") && jsonObject.has("userName") && jsonObject.has("password") && jsonObject.has("userRole") &&
+                    jsonObject.has("managerId") && jsonObject.has("telephone") && jsonObject.has("userFirstName")
+                    && jsonObject.has("userLastName")
+//                && jsonObject.has(ConstantsJson.DEPARTMENT_ID)
+            ){
+                return true;
+            }else return false;
+        } else {
+            if (jsonObject.has("city") && jsonObject.has("email") && jsonObject.has("status") && jsonObject.has("userID") &&
+                    jsonObject.has("street") && jsonObject.has("houseNumber") && jsonObject.has("sex") && jsonObject.has("doorNumber") &&
+                    jsonObject.has("telephone") && jsonObject.has("userName") && jsonObject.has("password") && jsonObject.has("userRole") &&
+                    jsonObject.has("managerId")  && jsonObject.has("userFirstName") &&
+                    jsonObject.has("userLastName")
+                && jsonObject.has(ConstantsJson.DEPARTMENT_ID)
+            ){
+                return true;
+            }else return false;
+        }
 
     }
 
 
     public static JSONObject parsFromObjToJSON(User user){
         JSONObject JSuser = new JSONObject();
+
         try {
 
 //        this.city = jsonObject.getString("city");
@@ -291,6 +333,8 @@ public class User {
             User.setMyUserName(json.getString("user_name"));
             User.setGPSAnuble(json.getInt("gps"));
             User.setMyDepartmentId(json.getInt("departmentId"));
+            User.setMyEmail(json.getString("mail"));
+
 
             String string=createStringForFile(User.getMyPrivateKey(),User.getMyUserId());
             FileService.save(string);
@@ -454,7 +498,7 @@ public class User {
         for (int i = 0 ; i<Store.sizeUserOnline() ; i++){
 
             try {
-                if(alert.getUserFrom() == Store.getUsersOnline().getJSONObject(i).getInt("user_id")){
+                if(alert.getUserIdFrom() == Store.getUsersOnline().getJSONObject(i).getInt("user_id")){
                     fromUser = Store.getUsersOnline().getJSONObject(i).getString("user_name");
                 }
             } catch (JSONException e) {
@@ -467,8 +511,8 @@ public class User {
         bundle.putString("alert","");
         msg.setData(bundle);
         alertActivityHandler.sendMessage(msg);
+        incomingAlerts.add(alert);
         notifyApp(alert,"New Alert from user: " + fromUser +" Title: " +alert.getName());
-
 
     }
 
@@ -620,7 +664,7 @@ public class User {
         this.myTasks = tasks;
     }
 
-    public List<Alert> getRecivedAlerts() {
+    public static List<Alert> getRecivedAlerts() {
         return recivedAlerts;
     }
 

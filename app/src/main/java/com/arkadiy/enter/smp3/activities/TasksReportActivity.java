@@ -29,6 +29,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 public class TasksReportActivity extends AppCompatActivity {
     private EditText fromDateTime;
     private EditText toDateTime;
@@ -40,7 +42,8 @@ public class TasksReportActivity extends AppCompatActivity {
     private ArrayAdapter groupReportAdapter;
     private ArrayAdapter allUserOrDepartmentsAdapter;
 
-    private String []groupUsers = {"All user","One user","Departments"};
+//    private String []groupUsers = {"All user","One user","Departments"};
+    private String []groupUsers = {"One user","All user","Departments"};
     private String users;
     private int reportId;
     private int groupId;
@@ -61,7 +64,7 @@ public class TasksReportActivity extends AppCompatActivity {
         typeReportSpinner =(Spinner)findViewById(R.id.typeReport_Spinner);
         groupUsersSpinner  =(Spinner)findViewById(R.id.groupUsers_Spinner);
         allUsersOrDepartmentsSpinner = (Spinner)findViewById(R.id.forUser_Spinner);
-        allUsersOrDepartmentsSpinner.setVisibility(View.GONE);
+        allUsersOrDepartmentsSpinner.setVisibility(View.VISIBLE);
         fillReportList();
 
         typeReportAdapter = new ArrayAdapter(TasksReportActivity.this,R.layout.support_simple_spinner_dropdown_item,typeReport);
@@ -100,23 +103,23 @@ public class TasksReportActivity extends AppCompatActivity {
         groupUsersSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
                 if (position == 0){
-                    groupId = position;
-                    allUsersOrDepartmentsSpinner.setVisibility(View.GONE);
-                }else if (position == 1){
                     groupId = position;
                     allUsersOrDepartmentsSpinner.setVisibility(View.VISIBLE);
                     allUserOrDepartmentsAdapter = new ArrayAdapter(App.getContext(),R.layout.support_simple_spinner_dropdown_item,Store.getAllUserName());
                     allUsersOrDepartmentsSpinner.setAdapter(allUserOrDepartmentsAdapter);
-
-
+                }else if (position == 1){
+                    groupId = position;
+                    allUsersOrDepartmentsSpinner.setVisibility(View.GONE);
+//                    allUserOrDepartmentsAdapter = new ArrayAdapter(App.getContext(),R.layout.support_simple_spinner_dropdown_item,Store.getAllUserName());
+//                    allUsersOrDepartmentsSpinner.setAdapter(allUserOrDepartmentsAdapter);
                 }
                 else if (position == 2){
                     groupId = position;
                     allUsersOrDepartmentsSpinner.setVisibility(View.VISIBLE);
                     allUserOrDepartmentsAdapter = new ArrayAdapter(App.getContext(),R.layout.support_simple_spinner_dropdown_item,Store.getAllDepartmentsName());
                     allUsersOrDepartmentsSpinner.setAdapter(allUserOrDepartmentsAdapter);
-
                 }
             }
 
@@ -131,17 +134,18 @@ public class TasksReportActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (groupId == 2 ){
                     String departmentName = Store.getAllDepartmentsName().get(position);
-                    departmentId = getDepartmentIdByName(departmentName);
-                }else if (groupId == 1){
+//                    departmentId = getDepartmentIdByName(departmentName);
+                    userId = getDepartmentIdByName(departmentName);
+//                }else if (groupId == 1){
+                }else if (groupId == 0){
 
                     String userName = Store.getAllUserName().get(position);
-                   userId = getUserIdByName(userName);
+                    userId = getUserIdByName( userName);
                 }
 
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
 
             }
         });
@@ -158,18 +162,22 @@ public class TasksReportActivity extends AppCompatActivity {
         GlobalServices.addListener(toolbar,this);
     }
 
-    private void buildJSon(int reportId, String fromDateTime, String toDateTime, int groupId, long userId) {
+    private void buildJSon(int reportId, String fromDateTimeString, String toDateTimeString, int groupId, long userId) {
 
         JSONObject jsonObject = new JSONObject();
         try {
 
             jsonObject.put("report_id",reportId);
-            jsonObject.put("from_date_time",fromDateTime);
-            jsonObject.put("to_date_time",toDateTime);
+            jsonObject.put("from_date_time",fromDateTimeString);
+            jsonObject.put("to_date_time",toDateTimeString);
             jsonObject.put("group",groupId);
             jsonObject.put("id",userId);
             jsonObject.put("mail", User.getMyEmail());
+//            fromDateTime.setText("");
+//            toDateTime.setText("");
+
 //            jsonObject.put("mail", "enterz.ae@gmail.com");
+
             Manager.getReport(requestQueue,jsonObject);
 
 
@@ -203,7 +211,8 @@ public class TasksReportActivity extends AppCompatActivity {
 
         for (int i = 0 ; i < Store.getAllUsers().size() ; i++){
             if (useName == Store.getAllUsers().get(i).getUserName()){
-                userId = Store.getDepartments().get(i).getId();
+//                userId = Store.getDepartments().get(i).getId();
+                userId = Store.getAllUsers().get(i).getUserId();
                 break;
             }
         }

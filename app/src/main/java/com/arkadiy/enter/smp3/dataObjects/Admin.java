@@ -19,7 +19,7 @@ import java.util.List;
 public class Admin extends Manager {
     private static ArrayList<User> AllUsers ;
     public Admin(JSONObject jsonObject) {
-        super(jsonObject);
+        super(jsonObject,-1);
     }
 
     public static void createOrEditAlert(Context context, JSONObject newAlert, RequestQueue requestQueue, IHandler i_handlerNewAlert ){

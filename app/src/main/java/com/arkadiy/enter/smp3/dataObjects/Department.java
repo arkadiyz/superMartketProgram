@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Department {
 
-    private long id;
+    private int id;
     private String name;
     private  ArrayList users;
     private String description;
@@ -32,7 +32,7 @@ public class Department {
                 fillTasks(jsonObject.getJSONArray("tasks"));
             }
             if (!jsonObject.isNull("manager")){
-                Manager man = new Manager(jsonObject.getJSONObject("manager"));
+                Manager man = new Manager(jsonObject.getJSONObject("manager") ,this.getId());
                 setManager(man);
             }
 
@@ -71,11 +71,11 @@ public class Department {
 
         //run through array and add to users
     }
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -129,7 +129,7 @@ public class Department {
         return departmentName;
    }
    public static long getDepartmentIdByName(String departmentName){
-        long departmentId = -1;
+        int departmentId = -1;
        for (int i = 0 ; i < Store.getDepartments().size() ; i++){
 
            if (departmentName == Store.getDepartments().get(i).getName()){
@@ -139,4 +139,5 @@ public class Department {
        }
         return departmentId;
    }
+
 }

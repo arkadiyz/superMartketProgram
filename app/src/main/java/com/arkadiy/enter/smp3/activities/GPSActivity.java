@@ -65,14 +65,15 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
     private int StoreGPSAnable;
     private GoogleMap mMap;
     private Geocoder geocoder;
-    private List<Address>addresses;
-    private Spinner  attemptsSpinner;
+    private List<Address> addresses;
+    private Spinner attemptsSpinner;
     private ArrayAdapter<String> attemptsAdapter;
     private List<String> attemptsList;
     private int currentAttempts;
-    private String currentRadius="0.0";
+    private String currentRadius = "0.0";
     private double currentLatitude;
     private double currentLongtitude;
+
 
 
     @Override
@@ -81,8 +82,9 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
         setContentView(R.layout.activity_gps);
         App.setContext(this);
         fillAttempts();
-        attemptsAdapter = new ArrayAdapter(App.getContext(),android.R.layout.simple_spinner_dropdown_item,attemptsList);
-        sw = (Switch)findViewById(R.id.switchGPS) ;
+
+        attemptsAdapter = new ArrayAdapter(App.getContext(), android.R.layout.simple_spinner_dropdown_item, attemptsList);
+        sw = (Switch) findViewById(R.id.switchGPS);
         requestQueue = Volley.newRequestQueue(this);
         getNewLocationBtn = (Button) findViewById(R.id.get_New_Location_Btn);
         sendNewLocationBtn = (Button) findViewById(R.id.send_new_location_Btn);
@@ -90,7 +92,8 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
         radiusSizeEditText = (EditText) findViewById(R.id.radiusSize_EditText);
         attemptsSpinner = (Spinner) findViewById(R.id.attemptsSpinner);
         attemptsSpinner.setAdapter(attemptsAdapter);
-
+        GpsChecker.checkGPS(locationManager);
+        GpsChecker.gpsUnable();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -101,26 +104,23 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
         initGPS();
 
 
-
-
         sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                if(!isChecked){
+                if (!isChecked) {
 
                     getNewLocationBtn.setVisibility(View.INVISIBLE);
                     radiusSizeEditText.setVisibility(View.INVISIBLE);
-                    Toast.makeText(App.getContext(),"You chose an option without GPS ",Toast.LENGTH_LONG).show();
+                    Toast.makeText(App.getContext(), "You chose an option without GPS ", Toast.LENGTH_LONG).show();
                     StoreGPSAnable = 0;
-                }
-                else {
+                } else {
                     radiusSizeEditText.setText(currentRadius);
                     getNewLocationBtn.setVisibility(View.VISIBLE);
                     radiusSizeEditText.setVisibility(View.VISIBLE);
-                    Toast.makeText(App.getContext(),"You chose to use GPS ",Toast.LENGTH_LONG).show();
+                    Toast.makeText(App.getContext(), "You chose to use GPS ", Toast.LENGTH_LONG).show();
                     StoreGPSAnable = 1;
-                    setLocationOnMap(currentLatitude,currentLongtitude);
+                    setLocationOnMap(currentLatitude, currentLongtitude);
 
                 }
 
@@ -129,10 +129,11 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
         getNewLocationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                checkLocation();
-
-
+                if (GpsChecker.checkGPS(locationManager)) {
+                    checkLocation();
+                }else {
+                    GpsChecker.gpsUnable();
+                }
 
 
             }
@@ -150,7 +151,7 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
             @Override
             public void onClick(View v) {
                 //TODO: send string for new location to server
-                if(radiusSizeEditText.getText().toString() != ""){
+                if (radiusSizeEditText.getText().toString() != "") {
 
                     sendToServer();
 
@@ -174,28 +175,27 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
         getCurrentParams();
 
 
-
     }
 
     private void getCurrentParams() {
-        Admin.getGpsCurrentParams(this,null,requestQueue,handler->{
+        Admin.getGpsCurrentParams(this, null, requestQueue, handler -> {
             try {
 
                 JSONObject json = new JSONObject(handler.getData().getString("json"));
-                attemptsSpinner.setSelection(json.getInt("number")-1);
-                currentLatitude=json.getDouble("Latitude");
-                currentLongtitude=json.getDouble("Longtitude");
-                currentRadius=String.valueOf(json.getDouble("Radius"));
+                attemptsSpinner.setSelection(json.getInt("number") - 1);
+                currentLatitude = json.getDouble("Latitude");
+                currentLongtitude = json.getDouble("Longtitude");
+                currentRadius = String.valueOf(json.getDouble("Radius"));
 
-                if(json.getInt("gps")==1){
+                if (json.getInt("gps") == 1) {
                     sw.setChecked(true);
                     StoreGPSAnable = 1;
                     getNewLocationBtn.setVisibility(View.VISIBLE);
                     radiusSizeEditText.setVisibility(View.VISIBLE);
                     radiusSizeEditText.setText(String.valueOf(json.getDouble("Radius")));
-                    setLocationOnMap(currentLatitude,currentLongtitude);
+                    setLocationOnMap(currentLatitude, currentLongtitude);
 
-                }else{
+                } else {
                     sw.setChecked(false);
                     StoreGPSAnable = 0;
                     getNewLocationBtn.setVisibility(View.INVISIBLE);
@@ -213,27 +213,27 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
     }
 
     private void fillAttempts() {
-        attemptsList=new ArrayList<>();
-        for (int i=1;i<6;i++){
+        attemptsList = new ArrayList<>();
+        for (int i = 1; i < 6; i++) {
             attemptsList.add(String.valueOf(i));
         }
 
 
     }
 
-    private void sendToServer(){
+    private void sendToServer() {
         try {
 
             JSONObject newJsonSettingsLocation = new JSONObject()
-                    .put("Latitude",Double.parseDouble(checker.getLatitude()))
-                    .put("number",currentAttempts)
-                    .put("Longtitude",Double.parseDouble(checker.getLongtitude()))
-                    .put("Size",Double.parseDouble(radiusSizeEditText.getText().toString()))
-                    .put("gps",StoreGPSAnable);
-            Admin.addShopSettingLocation(GPSActivity.this,newJsonSettingsLocation,requestQueue,handler->{
+                    .put("Latitude", Double.parseDouble(checker.getLatitude()))
+                    .put("number", currentAttempts)
+                    .put("Longtitude", Double.parseDouble(checker.getLongtitude()))
+                    .put("Size", Double.parseDouble(radiusSizeEditText.getText().toString()))
+                    .put("gps", StoreGPSAnable);
+            Admin.addShopSettingLocation(GPSActivity.this, newJsonSettingsLocation, requestQueue, handler -> {
                 try {
                     JSONObject json = new JSONObject(handler.getData().getString("json"));
-                    Toast.makeText(App.getContext(),json.getString("message"),Toast.LENGTH_LONG).show();
+                    Toast.makeText(App.getContext(), json.getString("message"), Toast.LENGTH_LONG).show();
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -249,21 +249,22 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
 
 
     }
-    private void initGPS() {
 
+    private void initGPS() {
 
 
         locationManager = (LocationManager) GPSActivity.this.getSystemService(Context.LOCATION_SERVICE);
 
-        checker = new GpsChecker(locationManager, GPSActivity.this, handConfGps->{
+        checker = new GpsChecker(locationManager, GPSActivity.this, handConfGps -> {
 
-            if (handConfGps.getData()!=null) {
+            if (handConfGps.getData() != null) {
 
             }
             return true;
         });
 //
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -275,7 +276,6 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
         }
 //        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 0.0f, checker);
 //        locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-
 
 
         checker.run();
@@ -290,7 +290,7 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
         criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
         criteria.setVerticalAccuracy(Criteria.ACCURACY_HIGH);
 
-        locationManager.requestLocationUpdates(1000,1,criteria,checker,null);
+        locationManager.requestLocationUpdates(1000, 1, criteria, checker, null);
 
 //        locationManager.removeUpdates(checker);
 //        locationManager=null;
@@ -298,8 +298,7 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
     }
 
 
-
-    private void checkLocation(){
+    private void checkLocation() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED &&
@@ -317,60 +316,61 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
         //
         // locationManager.requestLocationUpdates(1000,1,criteria,checker,null);
 
-        locationManager.requestSingleUpdate("gps",checker,null);
-        checker.onLocationChanged(locationManager.getLastKnownLocation(checker.getLatitude()+checker.getLongtitude()));
+        locationManager.requestSingleUpdate("gps", checker, null);
+        checker.onLocationChanged(locationManager.getLastKnownLocation(checker.getLatitude() + checker.getLongtitude()));
 //        newLocationTextView.setText("Latitude: "+checker.getLatitude() + " Longtitude: "+checker.getLongtitude());
 
-        setLocationOnMap(Double.parseDouble(checker.getLatitude()),Double.parseDouble(checker.getLongtitude()));
+        setLocationOnMap(Double.parseDouble(checker.getLatitude()), Double.parseDouble(checker.getLongtitude()));
 
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
         mMap = googleMap;
     }
 
-    public void setLocationOnMap(double latitude,double longtitude){
+    public void setLocationOnMap(double latitude, double longtitude) {
         // Add a marker in Sydney, Australia, and move the camera.
-        LatLng location = new LatLng(latitude,longtitude);
+        LatLng location = new LatLng(latitude, longtitude);
 
         float zoomLevel = 18.0f;
 
 
         mMap.addMarker(new MarkerOptions().position(location).title("Your Location"));
         // mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney,zoomeLevel));
-       // CameraUpdate myLocation = CameraUpdateFactory.newLatLngZoom(location,zoomLevel);
-       // mMap.animateCamera(myLocation);
+        // CameraUpdate myLocation = CameraUpdateFactory.newLatLngZoom(location,zoomLevel);
+        // mMap.animateCamera(myLocation);
 
-        CircleOptions circleoptions=new CircleOptions().strokeWidth(2).strokeColor(Color.BLUE).fillColor(Color.parseColor("#500084d3"));
+        CircleOptions circleoptions = new CircleOptions().strokeWidth(2).strokeColor(Color.BLUE).fillColor(Color.parseColor("#500084d3"));
         mMap.addMarker(new MarkerOptions().position(location));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
-        Circle circle=mMap.addCircle(circleoptions.center(location).radius(Double.parseDouble(radiusSizeEditText.getText().toString())));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(circleoptions.getCenter(),zoomLevel));
+        Circle circle = mMap.addCircle(circleoptions.center(location).radius(Double.parseDouble(radiusSizeEditText.getText().toString())));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(circleoptions.getCenter(), zoomLevel));
         getAdrres();
 
 
     }
 
-    private void getAdrres(){
+    private void getAdrres() {
 
-        try{
-            addresses = geocoder.getFromLocation(Double.parseDouble(checker.getLatitude()),Double.parseDouble(checker.getLongtitude()),1);
+        try {
+            addresses = geocoder.getFromLocation(Double.parseDouble(checker.getLatitude()), Double.parseDouble(checker.getLongtitude()), 1);
             String address = addresses.get(0).getAddressLine(0);
             String area = addresses.get(0).getLocality();
             String city = addresses.get(0).getAdminArea();
             String country = addresses.get(0).getCountryName();
             String postalCode = addresses.get(0).getPostalCode();
 
-            newLocationTextView.setText("Address: "+address+"\n"+
-                                        "Area: "+area+"\n"+
-                                        "City: "+city+"\n"+
-                                        "Country: "+country+"\n"+
-                                        "Postal Code: "+postalCode+"\n"+
-                                        "Latit"+checker.getLatitude()+"\n"+
-                                        "LONG"+checker.getLongtitude());
+            newLocationTextView.setText("Address: " + address + "\n" +
+                    "Area: " + area + "\n" +
+                    "City: " + city + "\n" +
+                    "Country: " + country + "\n" +
+                    "Postal Code: " + postalCode + "\n" +
+                    "Latit" + checker.getLatitude() + "\n" +
+                    "LONG" + checker.getLongtitude());
 
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -388,7 +388,9 @@ public class GPSActivity extends FragmentActivity implements OnMapReadyCallback 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu,menu);
+        getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
+
+
 }

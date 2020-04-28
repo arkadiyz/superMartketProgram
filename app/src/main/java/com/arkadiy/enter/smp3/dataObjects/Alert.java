@@ -4,6 +4,9 @@ package com.arkadiy.enter.smp3.dataObjects;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class Alert {
@@ -11,7 +14,8 @@ public class Alert {
     private String name;
     private String description;
     private String sendAt; //TimeDate
-    private int userFrom;
+    private String userNameFrom;
+    private int userIdFrom;
     private int userto;
     private List<Integer> toDepartments;
     private JSONObject alert;
@@ -19,10 +23,16 @@ public class Alert {
     public Alert (JSONObject alert){
 
         try {
+            DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+            Date date = new Date();
+
+
             this.id = alert.getInt("id");
             this.name = alert.getString("name");
             this.description = alert.getString("description");
-            this.userFrom = alert.getInt("user_id_from");
+            this.userIdFrom = alert.getInt("user_id_from");
+            this.userNameFrom = Store.getOnlineUserNameById(alert.getInt("user_id_from"));
+            this.sendAt = dateFormat.format(date);
 
 
         } catch (JSONException e) {
@@ -69,12 +79,16 @@ public class Alert {
         this.sendAt = sendAt;
     }
 
-    public int getUserFrom() {
-        return userFrom;
+    public int getUserIdFrom() {
+        return userIdFrom;
     }
 
-    public void setUserFrom(int userFrom) {
-        this.userFrom = userFrom;
+    public String getUserNameFrom() {
+        return userNameFrom;
+    }
+
+    public void setUserIdFrom(int userIdFrom) {
+        this.userIdFrom = userIdFrom;
     }
 
     public int getUserto() {

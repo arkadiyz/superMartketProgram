@@ -31,6 +31,7 @@ import com.arkadiy.enter.smp3.R;
 import com.arkadiy.enter.smp3.config.AppConfig;
 import com.arkadiy.enter.smp3.config.ResponseCode;
 import com.arkadiy.enter.smp3.dataObjects.Alert;
+import com.arkadiy.enter.smp3.dataObjects.Store;
 import com.arkadiy.enter.smp3.dataObjects.Task;
 import com.arkadiy.enter.smp3.dataObjects.User;
 import com.arkadiy.enter.smp3.dataObjects.Users;
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity  implements ActivityCompat.O
         setTasksHandler();
 
 
+
         USERS =  new HashMap<>();
 
         context = MainActivity.this;
@@ -110,6 +112,8 @@ public class MainActivity extends AppCompatActivity  implements ActivityCompat.O
         GlobalServices.addListener(toolbar,this);
 
 
+
+
     }
 
     private void setTasksHandler() {
@@ -125,6 +129,11 @@ public class MainActivity extends AppCompatActivity  implements ActivityCompat.O
                             Alert alert=new Alert(1,task.getNameTask(),task.getDescription());
                             String message="New Task" +" Task Name: " +alert.getName();
                             User.notifyApp(alert,message);
+                            Store.checkUsersOnline(App.getContext(),requestQueue, handlerOnlinUser->{
+                                User.notifyApp(alert,message);
+
+                                return true;
+                            });
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -228,6 +237,7 @@ public class MainActivity extends AppCompatActivity  implements ActivityCompat.O
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this,IncomingAlerts.class);
                 startActivity(intent);
+                cancelIncomingMessages();
             }
         });
 //        exitButton.setOnClickListener(new View.OnClickListener() {

@@ -98,7 +98,7 @@ public class LogInActivity extends AppCompatActivity implements DialogforgotPass
         User keyAndUserId=FileService.getPrivateKey();
 
         if(keyAndUserId!=null) {
-
+            System.out.println("++++ CHECKED PRIVATE KEY  --->>>" + keyAndUserId);
             DataServices.sendData(AppConfig.CHECK_PRIVATE_KEY + keyAndUserId.getPrivateKey() + "/"
                             + keyAndUserId.getUserId(),
                     null, requestQueue, LogInActivity.this,
@@ -138,9 +138,6 @@ public class LogInActivity extends AppCompatActivity implements DialogforgotPass
                 @Override
                 public void onClick(View view) {
                     User.logIn(jsonParse(),errorResponseView);
-//                        DataServices.sendData(AppConfig.LOGIN,jsonParse(),requestQueue,
-//                        LogInActivity.this,1, null,user);
-
                 }
             });
 
@@ -149,20 +146,10 @@ public class LogInActivity extends AppCompatActivity implements DialogforgotPass
                 public void onClick(View view) {
                     DialogforgotPassword dialogforgotPassword = new DialogforgotPassword();
                     dialogforgotPassword.show(getSupportFragmentManager(),userName.getText().toString());
-//                Intent intent = new Intent(LogInActivity.this,ForgotPassword.class);
-//                startActivity(intent);
                 }
             });
 
-//        if (privateKey!=null)
-//            DataServices.getUserIntoDataBase(user);
-//            DataServices.sendData(AppConfig.CHECK_PRIVATE_KEY+ privateKey,
-//                    null,requestQueue,LogInActivity.this,
-//                    Constants.METHOD_GET,null,user);
-//
-//            Intent intent = new Intent( LogInActivity.this,MainActivity.class);
-//            startActivity(intent);
-//        }
+
 
     }
 

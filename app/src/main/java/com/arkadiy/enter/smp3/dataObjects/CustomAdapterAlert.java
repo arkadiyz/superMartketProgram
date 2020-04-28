@@ -1,17 +1,14 @@
 package com.arkadiy.enter.smp3.dataObjects;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.arkadiy.enter.smp3.R;
-import com.arkadiy.enter.smp3.utils.LinkifiedTextView;
 
 import java.util.List;
 
@@ -23,12 +20,14 @@ public class CustomAdapterAlert extends ArrayAdapter<Alert> {
 
     private List<Alert>alerts;
     private Activity context;
+    private boolean hideTextView = true;
 
 
-    public CustomAdapterAlert(Activity context, List<Alert>alert) {
+    public CustomAdapterAlert(Activity context, List<Alert>alert ,boolean hideTextView) {
         super(context, R.layout.customlayout,alert);
         this.context = context;
         this.alerts = alert;
+        this.hideTextView = hideTextView;
 
     }
 
@@ -49,7 +48,13 @@ public class CustomAdapterAlert extends ArrayAdapter<Alert> {
             viewHolder = (ViewHolder) r.getTag();
         }
 
+
         viewHolder.userNameTextView.setText(alerts.get(position).getName());
+        if (!hideTextView) {
+            viewHolder.sendByTextView.setText("Sent from: "+alerts.get(position).getUserNameFrom());
+            viewHolder.whenToSendTextView.setText("Sent at: "+alerts.get(position).getSendAt());
+        }
+
         viewHolder.imageView.setVisibility(View.VISIBLE);
 
 //        viewHolder.idTextView.setText(alerts.get(position).getDescription());
@@ -62,11 +67,17 @@ public class CustomAdapterAlert extends ArrayAdapter<Alert> {
     class ViewHolder{
 
         TextView userNameTextView;
+        TextView sendByTextView;
+        TextView whenToSendTextView;
         ImageView imageView;
 
-        ViewHolder(View v){
+        ViewHolder(View v ){
             userNameTextView = (TextView) v.findViewById(R.id.alertName_textView);
             imageView=(ImageView)v.findViewById(R.id.imageCustom);
+            if (!hideTextView){
+                sendByTextView = (TextView) v.findViewById(R.id.send_by_textView);
+                whenToSendTextView = (TextView) v.findViewById(R.id.when_to_send_textView);
+            }
 
 
         }

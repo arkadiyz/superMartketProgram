@@ -23,6 +23,7 @@ import com.arkadiy.enter.smp3.config.ResponseCode;
 import com.arkadiy.enter.smp3.dataObjects.BuildUser;
 import com.arkadiy.enter.smp3.dataObjects.Department;
 import com.arkadiy.enter.smp3.dataObjects.Manager;
+import com.arkadiy.enter.smp3.dataObjects.Store;
 import com.arkadiy.enter.smp3.dataObjects.User;
 import com.arkadiy.enter.smp3.services.GlobalServices;
 import com.arkadiy.enter.smp3.utils.Constants;
@@ -125,9 +126,11 @@ public class AddNewUserActivity extends AppCompatActivity {
                        if (bundle.getInt(Constants.RESPONSE_CODE) < ResponseCode.ERROR){
 //                           Toast.makeText(App.getContext(),"User has been created",Toast.LENGTH_LONG).show();
                            resetViews();
+                           Store.showMessage(true,"User has been created");
                        }
                        else {
-                           Toast.makeText(App.getContext(),"User not created",Toast.LENGTH_LONG).show();
+                           Store.showMessage(true,"User not created");
+
                        }
 
                        return true;
@@ -166,28 +169,29 @@ public class AddNewUserActivity extends AppCompatActivity {
         });
         Toolbar toolbar=(Toolbar)findViewById(R.id.toolbarMine);
         setSupportActionBar(toolbar);
-        GlobalServices.addListener(toolbar,this);    }
+        GlobalServices.addListener(toolbar,this);
+    }
 
 
 
     private void resetViews(){
 
-        Intent intent = new Intent(AddNewUserActivity.this,SavedActivity.class);
-        intent.putExtra("activity",AdminActivity.class.getName());
-        startActivity(intent);
+//        Intent intent = new Intent(AddNewUserActivity.this,SavedActivity.class);
+//        intent.putExtra("activity",AdminActivity.class.getName());
+//        startActivity(intent);
 
-//        addNewUserNameEditText.setText("");
-//        addNewUserPasswordEditText.setText("");
-//        addNewUserFirstNameEditText.setText("");
-//        addNewUserSecondNameEditText.setText("");
-        //rollsUser = (Spinner) findViewById(R.id.addNewUserRole_Spinner);
-        //departmentsSinner = (Spinner) findViewById(R.id.addNewUserManager_Spinner);
-//        addNewUserCityEditText.setText("");
-//        addNewUserStreetEditText.setText("");
-//        addNewUserHouseNumberEditText.setText("");
-//        addNewUserDoorNumberEditText.setText("");
-//        addNewUserTelephoneEditText.setText("");
-//        addNewUserEmailEditText.setText("");
+        addNewUserNameEditText.setText("");
+        addNewUserPasswordEditText.setText("");
+        addNewUserFirstNameEditText.setText("");
+        addNewUserSecondNameEditText.setText("");
+//        rollsUser = (Spinner) findViewById(R.id.addNewUserRole_Spinner);
+//        departmentsSinner = (Spinner) findViewById(R.id.addNewUserManager_Spinner);
+        addNewUserCityEditText.setText("");
+        addNewUserStreetEditText.setText("");
+        addNewUserHouseNumberEditText.setText("");
+        addNewUserDoorNumberEditText.setText("");
+        addNewUserTelephoneEditText.setText("");
+        addNewUserEmailEditText.setText("");
 
     }
 

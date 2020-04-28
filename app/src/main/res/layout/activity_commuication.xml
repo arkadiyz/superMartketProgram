@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -15,43 +15,48 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/personalInformation_ScrollView"
         android:fontFamily="@font/bangers"
-        android:paddingLeft="150sp"
+        android:layout_below="@+id/toolbarMine"
+        android:layout_centerInParent="true"
         android:text="Online Users"
         android:textSize="18dp" />
 
     <Spinner
         android:id="@+id/onlineUsers_Spinner"
+        android:layout_below="@+id/personalInformation_TextView"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_alignParentTop="true"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="0dp">
 
     </Spinner>
 
     <TextView
-        android:id="@+id/alerts"
+        android:id="@+id/alerts_TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/bangers"
-        android:paddingLeft="150sp"
+        android:layout_below="@+id/onlineUsers_Spinner"
+        android:layout_centerInParent="true"
         android:text="Choose Alert"
         android:textSize="18dp" />
 
     <View
+        android:id="@+id/space_line_textView_listView"
         android:layout_width="match_parent"
         android:layout_height="1sp"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="30dp"
+        android:layout_marginTop="10sp"
+        android:layout_marginBottom="10sp"
+        android:layout_below="@+id/alerts_TextView"
         android:background="@android:color/darker_gray" />
 
     <ListView
         android:id="@+id/alert_ListView"
         android:layout_width="match_parent"
-        android:layout_height="680dp"
-        android:layout_below="@+id/onlineUsers_Spinner"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5sp"
+        android:layout_below="@+id/space_line_textView_listView"
         android:layout_alignParentBottom="true">
 
     </ListView>
 
 
-</LinearLayout>
+</RelativeLayout>

@@ -7,8 +7,7 @@
     tools:context=".activities.SigningAClockActivity">
 
 
-        <include layout="@layout/toolbar"
-            />
+        <include layout="@layout/toolbar"/>
 
 
     <fragment
@@ -70,9 +69,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/exitData_TextView"
+        android:layout_below="@+id/exit_TextView"
+        android:layout_above="@id/tableRowForButton"
+        android:scrollbarAlwaysDrawHorizontalTrack="true"
         android:paddingBottom="10dp"
-        android:paddingTop="20dp" />
+        android:paddingTop="30dp" />
 
     <TableRow
         android:id="@+id/tableRowForButton"
@@ -86,6 +87,8 @@
             android:layout_width="300dp"
             android:layout_height="match_parent"
             android:layout_alignParentBottom="true"
+            android:layout_below="@id/hours_ListView"
+
             android:layout_weight="1"
             android:background="@drawable/decline"
             android:shadowColor="#A8A8A8"
@@ -102,6 +105,7 @@
             android:id="@+id/enter_button"
             android:layout_width="300dp"
             android:layout_height="match_parent"
+            android:layout_below="@id/hours_ListView"
 
             android:layout_weight="1"
             android:background="@drawable/accept_button"
